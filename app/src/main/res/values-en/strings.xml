@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Film library</string>
+    <string name="author_name">Created by : Carlota López-coronado Domingo</string>
+    <string name="web_site">Go to website</string>
+    <string name="image_description">Avatar image</string>
+    <string name="support">Get support</string>
+    <string name="back">Back</string>
+    <string name="no_feautre">Feature not implemented</string>
+</resources>

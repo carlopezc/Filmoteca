@@ -32,6 +32,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,7 +67,7 @@ fun showToast(context: Context, message: String) {
 @Composable
 fun AboutScreen() {
     val context = LocalContext.current
-    val mensaje = "Funcionalidad sin implementar"
+    val mensaje = stringResource(id = R.string.no_feautre)
 
     Scaffold { paddingValues -> 
         Column(
@@ -77,13 +78,13 @@ fun AboutScreen() {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text = "Creada por : Carlota López-coronado Domingo",
+            Text(text = stringResource(id = R.string.author_name),
                 style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
                 modifier = Modifier.padding(bottom = 16.dp)
             )
             Image(
                 painter = painterResource(id = R.drawable.images),
-                contentDescription = "Foto avatar",
+                contentDescription = stringResource(id = R.string.image_description),
                 modifier = Modifier
                     .size(150.dp)
                     .clip(CircleShape)
@@ -94,15 +95,15 @@ fun AboutScreen() {
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 Button(onClick = {showToast(context, mensaje)}) {
-                    Text(text = "Ir al sitio web")
+                    Text(text = stringResource(id = R.string.web_site))
                 }
                 Button(onClick = {showToast(context, mensaje)}) {
-                    Text(text = "Obtener soporte")
+                    Text(text = stringResource(id = R.string.support))
                 }
             }
             Spacer(modifier = Modifier.height(8.dp))
             Button(onClick = {showToast(context, mensaje)}) {
-                Text(text = "Volver")
+                Text(text = stringResource(id = R.string.back))
             }
         }
     }

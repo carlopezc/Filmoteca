@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">Filmoteca</string>
+    <string name="author_name">Creada por : Carlota López-coronado Domingo</string>
+    <string name="web_site">Ir al sitio web</string>
+    <string name="image_description">Foto avatar</string>
+    <string name="support">Obtener soporte</string>
+    <string name="back">Volver</string>
+    <string name="no_feautre">Funcionalidad sin implementar</string>
 </resources>
