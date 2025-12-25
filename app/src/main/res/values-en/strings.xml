@@ -6,5 +6,6 @@
     <string name="image_description">Avatar image</string>
     <string name="support">Get support</string>
     <string name="back">Back</string>
-    <string name="no_feautre">Feature not implemented</string>
+    <string name="no_feature">Feature not implemented</string>
+    <string name="support_header">Film library support</string>
 </resources>

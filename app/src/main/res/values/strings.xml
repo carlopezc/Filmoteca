@@ -5,5 +5,6 @@
     <string name="image_description">Foto avatar</string>
     <string name="support">Obtener soporte</string>
     <string name="back">Volver</string>
-    <string name="no_feautre">Funcionalidad sin implementar</string>
+    <string name="no_feature">Funcionalidad sin implementar</string>
+    <string name="support_header">Soporte Filmoteca</string>
 </resources>

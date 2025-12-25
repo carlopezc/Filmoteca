@@ -1,5 +1,6 @@
 package com.campusdigitalfp.filmoteca
 
+import android.app.Activity
 import android.content.Context
 import android.os.Bundle
 import android.widget.Toast
@@ -32,7 +33,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.res.stringResource
+import android.content.Intent
+import android.net.Uri
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -64,10 +69,23 @@ fun showToast(context: Context, message: String) {
     Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
 }
 
+fun abrirPaginaWeb(uriHandler: UriHandler, url: String) {
+    uriHandler.openUri(url)
+}
+
+fun mandarEmail(context: Context, email: String, asunto: String) {
+    val intent = Intent(Intent.ACTION_SENDTO).apply {
+        data =  Uri.parse("mailto:carlotalcd@gmail.com")
+        putExtra(Intent.EXTRA_SUBJECT, asunto)
+    }
+    context.startActivity(intent)
+}
 @Composable
 fun AboutScreen() {
     val context = LocalContext.current
-    val mensaje = stringResource(id = R.string.no_feautre)
+    val uriHandler = LocalUriHandler.current
+    val messageToast = stringResource(id = R.string.no_feature)
+    val asuntoEmail = stringResource(id = R.string.support_header)
 
     Scaffold { paddingValues -> 
         Column(
@@ -87,22 +105,24 @@ fun AboutScreen() {
                 contentDescription = stringResource(id = R.string.image_description),
                 modifier = Modifier
                     .size(150.dp)
-                    .clip(CircleShape)
                     .padding(16.dp)
+                    .clip(CircleShape)
             )
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                Button(onClick = {showToast(context, mensaje)}) {
+                Button(onClick = {abrirPaginaWeb(uriHandler,"https://www.google.com")}) {
                     Text(text = stringResource(id = R.string.web_site))
                 }
-                Button(onClick = {showToast(context, mensaje)}) {
+                Button(onClick = {mandarEmail(context, "carlotalcd@gmail.com", asuntoEmail)}) {
                     Text(text = stringResource(id = R.string.support))
                 }
             }
             Spacer(modifier = Modifier.height(8.dp))
-            Button(onClick = {showToast(context, mensaje)}) {
+            Button(onClick = {
+                showToast(context, messageToast)
+            }) {
                 Text(text = stringResource(id = R.string.back))
             }
         }
