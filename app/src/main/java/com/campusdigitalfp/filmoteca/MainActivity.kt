@@ -1,6 +1,8 @@
 package com.campusdigitalfp.filmoteca
 
+import android.content.Context
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -20,25 +22,26 @@ import androidx.compose.material3.Button
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.ui.platform.LocalContext
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            FilmotecaTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+                AboutScreen()
             }
         }
     }
-}
 
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
@@ -56,17 +59,28 @@ fun GreetingPreview() {
     }
 }
 
+fun showToast(context: Context, message: String) {
+    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+}
+
 @Composable
 fun AboutScreen() {
+    val context = LocalContext.current
+    val mensaje = "Funcionalidad sin implementar"
+
     Scaffold { paddingValues -> 
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(16.dp),
+            verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text = "Creada por : Carlota López-coronado Domingo")
+            Text(text = "Creada por : Carlota López-coronado Domingo",
+                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
             Image(
                 painter = painterResource(id = R.drawable.images),
                 contentDescription = "Foto avatar",
@@ -75,13 +89,19 @@ fun AboutScreen() {
                     .clip(CircleShape)
                     .padding(16.dp)
             )
-            Button(onClick = {}) {
-                Text(text = "Ir al sitio web")
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                Button(onClick = {showToast(context, mensaje)}) {
+                    Text(text = "Ir al sitio web")
+                }
+                Button(onClick = {showToast(context, mensaje)}) {
+                    Text(text = "Obtener soporte")
+                }
             }
-            Button (onClick = {}) {
-                Text(text = "Obtener soporte")
-            }
-            Button (onClick = {}) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Button(onClick = {showToast(context, mensaje)}) {
                 Text(text = "Volver")
             }
         }
