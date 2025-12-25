@@ -8,4 +8,14 @@
     <string name="back">Back</string>
     <string name="no_feature">Feature not implemented</string>
     <string name="support_header">Film library support</string>
+    <string name="buttonFilm1">Watch A film</string>
+    <string name="buttonFilm2">Watch B film</string>
+    <string name="about">About</string>
+    <string name="film_data">Film data</string>
+    <string name="watch_film">Watch similar film</string>
+    <string name="edit_film">Edit film</string>
+    <string name="back_principal">Back to initial page</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="editing_text">Editing film</string>
 </resources>

@@ -14,7 +14,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
 import androidx.compose.ui.tooling.preview.Preview
@@ -23,7 +22,6 @@ import androidx.compose.material3.Button
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
@@ -38,13 +36,26 @@ import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.res.stringResource
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.ui.Alignment
+import androidx.navigation.NavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-                AboutScreen()
+                val navController = rememberNavController()
+
+            NavHost(navController = navController, startDestination = "filmList") {
+                composable("filmList") { FilmListScreen(navController) }
+                composable("filmData") { FilmDataScreen(navController) }
+                composable("filmEdit") { FilmEditScreen(navController) }
+                composable("about") { AboutScreen(navController) }
+            }
             }
         }
     }
@@ -65,6 +76,50 @@ fun GreetingPreview() {
     }
 }
 
+@Composable
+fun FilmListScreen(navController : NavController) {
+    Column (
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Button(onClick = { navController.navigate("filmData") }) { Text(stringResource(id = R.string.buttonFilm1)) }
+        Button(onClick = { navController.navigate("filmData") }) { Text(stringResource(id = R.string.buttonFilm2)) }
+        Button(onClick = { navController.navigate("about") }) { Text(stringResource(id = R.string.about)) }
+    }
+}
+
+@Composable
+fun FilmDataScreen(navController: NavController) {
+    Column (
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(text = stringResource(id = R.string.film_data))
+        Button(onClick = { navController.navigate("filmData")}) {Text(stringResource(id = R.string.watch_film))}
+        Button(onClick = { navController.navigate("filmEdit")}) {Text(stringResource(id = R.string.edit_film))}
+        Button(onClick = {
+            navController.navigate("filmList") {
+                popUpTo("filmList") { inclusive = true }
+            }
+        }) { Text(stringResource(id = R.string.back_principal))}
+    }
+}
+
+@Composable
+fun FilmEditScreen(navController: NavController) {
+    Column (
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(text = stringResource(id = R.string.editing_text))
+        Button(onClick = { navController.popBackStack() }) {Text(stringResource(id = R.string.save))}
+        Button(onClick = { navController.popBackStack() }) {Text(stringResource(id = R.string.cancel))}
+    }
+}
+
 fun showToast(context: Context, message: String) {
     Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
 }
@@ -81,10 +136,9 @@ fun mandarEmail(context: Context, email: String, asunto: String) {
     context.startActivity(intent)
 }
 @Composable
-fun AboutScreen() {
+fun AboutScreen(navController: NavController) {
     val context = LocalContext.current
     val uriHandler = LocalUriHandler.current
-    val messageToast = stringResource(id = R.string.no_feature)
     val asuntoEmail = stringResource(id = R.string.support_header)
 
     Scaffold { paddingValues -> 
@@ -121,7 +175,7 @@ fun AboutScreen() {
             }
             Spacer(modifier = Modifier.height(8.dp))
             Button(onClick = {
-                showToast(context, messageToast)
+                navController.popBackStack()
             }) {
                 Text(text = stringResource(id = R.string.back))
             }
