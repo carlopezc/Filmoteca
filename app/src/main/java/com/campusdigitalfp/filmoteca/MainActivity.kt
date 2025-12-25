@@ -42,6 +42,8 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.savedstate.serialization.saved
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -64,22 +66,6 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    FilmotecaTheme {
-        Greeting("Android")
-    }
-}
-
-@Composable
 fun FilmListScreen(navController : NavController) {
     Column (
         modifier = Modifier.fillMaxSize(),
@@ -94,12 +80,24 @@ fun FilmListScreen(navController : NavController) {
 
 @Composable
 fun FilmDataScreen(navController: NavController, filmTitle: String) {
+
+    val result = navController.currentBackStackEntry
+        ?.savedStateHandle
+        ?.getLiveData<String>("result")
+        ?.observeAsState()
+
     Column (
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(text = "${stringResource(id = R.string.film_data)}: $filmTitle")
+
+        if (result?.value == "RESULT_OK") {
+            Text(text = stringResource(id = R.string.changes_ok))
+        } else if (result?.value == "RESULT_CANCELED") {
+            Text(text = stringResource(id = R.string.changes_cancel))
+        }
         Button(onClick = { navController.navigate("filmData/Película relacionada")}) {Text(stringResource(id = R.string.watch_film))}
         Button(onClick = { navController.navigate("filmEdit")}) {Text(stringResource(id = R.string.edit_film))}
         Button(onClick = {
@@ -118,8 +116,17 @@ fun FilmEditScreen(navController: NavController) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(text = stringResource(id = R.string.editing_text))
-        Button(onClick = { navController.popBackStack() }) {Text(stringResource(id = R.string.save))}
-        Button(onClick = { navController.popBackStack() }) {Text(stringResource(id = R.string.cancel))}
+        Button(onClick = {
+            navController.previousBackStackEntry?.savedStateHandle?.set("result", "RESULT_OK")
+            navController.popBackStack()
+        }) {
+            Text(stringResource(id = R.string.save))
+        }
+        Button(onClick = {
+            navController.previousBackStackEntry?.savedStateHandle?.set("result", "RESULT_CANCELED")
+            navController.popBackStack()
+        }) {
+            Text(stringResource(id = R.string.cancel))}
     }
 }
 

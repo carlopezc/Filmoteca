@@ -19,4 +19,6 @@
     <string name="cancel">Cancel</string>
     <string name="editing_text">Editing film</string>
     <string name="no_title">Without title</string>
+    <string name="changes_ok">The film has been edited correctly</string>
+    <string name="changes_cancel">Changes have been canceled</string>
 </resources>

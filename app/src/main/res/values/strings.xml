@@ -18,4 +18,6 @@
     <string name="cancel">Cancelar</string>
     <string name="editing_text">Editando película</string>
     <string name="no_title">Sin título</string>
+    <string name="changes_ok">La película ha sido editada correctamente</string>
+    <string name="changes_cancel">Se han descartado los cambios</string>
 </resources>
