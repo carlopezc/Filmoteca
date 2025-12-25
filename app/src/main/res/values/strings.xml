@@ -7,8 +7,8 @@
     <string name="back">Volver</string>
     <string name="no_feature">Funcionalidad sin implementar</string>
     <string name="support_header">Soporte Filmoteca</string>
-    <string name="buttonFilm1">Ver pelicula A</string>
-    <string name="buttonFilm2">Ver pelicula B</string>
+    <string name="buttonFilm1">Ver pelicula A (Avatar)</string>
+    <string name="buttonFilm2">Ver pelicula B (Titanic)</string>
     <string name="about">Acerca de</string>
     <string name="film_data">Datos de la película</string>
     <string name="watch_film">Ver película relacionada</string>
@@ -17,4 +17,5 @@
     <string name="save">Guardar</string>
     <string name="cancel">Cancelar</string>
     <string name="editing_text">Editando película</string>
+    <string name="no_title">Sin título</string>
 </resources>

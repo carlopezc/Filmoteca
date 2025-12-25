@@ -52,13 +52,16 @@ class MainActivity : ComponentActivity() {
 
             NavHost(navController = navController, startDestination = "filmList") {
                 composable("filmList") { FilmListScreen(navController) }
-                composable("filmData") { FilmDataScreen(navController) }
+                composable("filmData/{filmTitle}") { backStackEntry ->
+                    val title = backStackEntry.arguments?.getString("filmTitle") ?: stringResource(id = R.string.no_title)
+                    FilmDataScreen(navController, title)
+                }
                 composable("filmEdit") { FilmEditScreen(navController) }
                 composable("about") { AboutScreen(navController) }
             }
-            }
         }
     }
+}
 
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
@@ -83,21 +86,21 @@ fun FilmListScreen(navController : NavController) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Button(onClick = { navController.navigate("filmData") }) { Text(stringResource(id = R.string.buttonFilm1)) }
-        Button(onClick = { navController.navigate("filmData") }) { Text(stringResource(id = R.string.buttonFilm2)) }
+        Button(onClick = { navController.navigate("filmData/Avatar") }) { Text(stringResource(id = R.string.buttonFilm1)) }
+        Button(onClick = { navController.navigate("filmData/Titanic") }) { Text(stringResource(id = R.string.buttonFilm2)) }
         Button(onClick = { navController.navigate("about") }) { Text(stringResource(id = R.string.about)) }
     }
 }
 
 @Composable
-fun FilmDataScreen(navController: NavController) {
+fun FilmDataScreen(navController: NavController, filmTitle: String) {
     Column (
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = stringResource(id = R.string.film_data))
-        Button(onClick = { navController.navigate("filmData")}) {Text(stringResource(id = R.string.watch_film))}
+        Text(text = "${stringResource(id = R.string.film_data)}: $filmTitle")
+        Button(onClick = { navController.navigate("filmData/Película relacionada")}) {Text(stringResource(id = R.string.watch_film))}
         Button(onClick = { navController.navigate("filmEdit")}) {Text(stringResource(id = R.string.edit_film))}
         Button(onClick = {
             navController.navigate("filmList") {
