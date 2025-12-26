@@ -47,11 +47,9 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.material3.Icon
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -64,16 +62,14 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.ui.layout.ContentScale
-import androidx.navigation.safe.args.generator.NavType
-import android.R.attr.type
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.navigation.navArgument
-import androidx.savedstate.serialization.saved
 
 
 class MainActivity : ComponentActivity() {
@@ -110,16 +106,54 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun FilmListScreen(navController : NavController) {
         val films = FilmDataSource.films
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = { Text(stringResource(R.string.app_name)) },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer
-                    )
-                )
-            }
-        ) { paddingValues ->
+        var showMenu by remember { mutableStateOf(false) }
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.app_name)) },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                ),
+                actions = {
+                    IconButton(onClick = { showMenu = true }) {
+                        Icon(Icons.Default.MoreVert, contentDescription = "Opciones")
+                    }
+
+                    DropdownMenu(
+                        expanded = showMenu,
+                        onDismissRequest = { showMenu = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("Añadir película") },
+                            onClick = {
+                                showMenu = false
+                                val newFilm = Film(
+                                    id = films.size,
+                                    title = "Nueva película",
+                                    director = "Director desconocido",
+                                    imageResId = R.drawable.popcorn,
+                                    year = 2024,
+                                    genre = Film.GENRE_ACTION,
+                                    format = Film.FORMAT_DVD
+                                )
+                                films.add(newFilm)
+                            },
+                            leadingIcon = { Icon(Icons.Default.Add, contentDescription = null) }
+                        )
+
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.about)) },
+                            onClick = {
+                                showMenu = false
+                                navController.navigate("about")
+                            },
+                            leadingIcon = { Icon(Icons.Default.Info, contentDescription = null) }
+                        )
+                    }
+                }
+            )
+        }
+    ) { paddingValues ->
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
