@@ -37,12 +37,18 @@ import androidx.compose.ui.res.stringResource
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.ui.Alignment
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.material3.Icon
 import androidx.savedstate.serialization.saved
 
 class MainActivity : ComponentActivity() {
@@ -65,68 +71,119 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FilmListScreen(navController : NavController) {
-    Column (
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Button(onClick = { navController.navigate("filmData/Avatar") }) { Text(stringResource(id = R.string.buttonFilm1)) }
-        Button(onClick = { navController.navigate("filmData/Titanic") }) { Text(stringResource(id = R.string.buttonFilm2)) }
-        Button(onClick = { navController.navigate("about") }) { Text(stringResource(id = R.string.about)) }
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.app_name)) }
+            )
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Button(onClick = { navController.navigate("filmData/Avatar") }) { Text(stringResource(id = R.string.buttonFilm1)) }
+            Button(onClick = { navController.navigate("filmData/Titanic") }) {
+                Text(
+                    stringResource(
+                        id = R.string.buttonFilm2
+                    )
+                )
+            }
+            Button(onClick = { navController.navigate("about") }) { Text(stringResource(id = R.string.about)) }
+        }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FilmDataScreen(navController: NavController, filmTitle: String) {
-
     val result = navController.currentBackStackEntry
         ?.savedStateHandle
         ?.getLiveData<String>("result")
         ?.observeAsState()
 
-    Column (
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(text = "${stringResource(id = R.string.film_data)}: $filmTitle")
-
-        if (result?.value == "RESULT_OK") {
-            Text(text = stringResource(id = R.string.changes_ok))
-        } else if (result?.value == "RESULT_CANCELED") {
-            Text(text = stringResource(id = R.string.changes_cancel))
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(filmTitle) },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                }
+            )
         }
-        Button(onClick = { navController.navigate("filmData/Película relacionada")}) {Text(stringResource(id = R.string.watch_film))}
-        Button(onClick = { navController.navigate("filmEdit")}) {Text(stringResource(id = R.string.edit_film))}
-        Button(onClick = {
-            navController.navigate("filmList") {
-                popUpTo("filmList") { inclusive = true }
-            }
-        }) { Text(stringResource(id = R.string.back_principal))}
-    }
+    ) {paddingValues ->
+                Column (
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(text = "${stringResource(id = R.string.film_data)}: $filmTitle")
+
+                    if (result?.value == "RESULT_OK") {
+                        Text(text = stringResource(id = R.string.changes_ok))
+                    } else if (result?.value == "RESULT_CANCELED") {
+                        Text(text = stringResource(id = R.string.changes_cancel))
+                    }
+                    Button(onClick = { navController.navigate("filmData/Película relacionada")}) {Text(stringResource(id = R.string.watch_film))}
+                    Button(onClick = { navController.navigate("filmEdit")}) {Text(stringResource(id = R.string.edit_film))}
+                    Button(onClick = {
+                        navController.navigate("filmList") {
+                            popUpTo("filmList") { inclusive = true }
+                        }
+                    }) { Text(stringResource(id = R.string.back_principal))}
+                }
+        }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FilmEditScreen(navController: NavController) {
-    Column (
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(text = stringResource(id = R.string.editing_text))
-        Button(onClick = {
-            navController.previousBackStackEntry?.savedStateHandle?.set("result", "RESULT_OK")
-            navController.popBackStack()
-        }) {
-            Text(stringResource(id = R.string.save))
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.edit_film)) },
+                navigationIcon = {
+                    IconButton(onClick = {
+                        navController.previousBackStackEntry?.savedStateHandle?.set("result", "RESULT_CANCELED")
+                        navController.popBackStack()
+                    }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                }
+            )
         }
-        Button(onClick = {
-            navController.previousBackStackEntry?.savedStateHandle?.set("result", "RESULT_CANCELED")
-            navController.popBackStack()
-        }) {
-            Text(stringResource(id = R.string.cancel))}
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(text = stringResource(id = R.string.editing_text))
+            Button(onClick = {
+                navController.previousBackStackEntry?.savedStateHandle?.set("result", "RESULT_OK")
+                navController.popBackStack()
+            }) {
+                Text(stringResource(id = R.string.save))
+            }
+            Button(onClick = {
+                navController.previousBackStackEntry?.savedStateHandle?.set(
+                    "result",
+                    "RESULT_CANCELED"
+                )
+                navController.popBackStack()
+            }) {
+                Text(stringResource(id = R.string.cancel))
+            }
+        }
     }
 }
 
