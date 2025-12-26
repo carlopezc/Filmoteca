@@ -69,6 +69,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.ui.layout.ContentScale
+import androidx.navigation.safe.args.generator.NavType
+import android.R.attr.type
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.navigation.navArgument
 import androidx.savedstate.serialization.saved
 
 
@@ -81,11 +85,21 @@ class MainActivity : ComponentActivity() {
 
             NavHost(navController = navController, startDestination = "filmList") {
                 composable("filmList") { FilmListScreen(navController) }
-                composable("filmData/{filmTitle}") { backStackEntry ->
-                    val title = backStackEntry.arguments?.getString("filmTitle") ?: stringResource(id = R.string.no_title)
-                    FilmDataScreen(navController, title)
+
+                composable(
+                    route = "filmData/{filmId}",
+                    arguments = listOf(navArgument("filmId") { type = androidx.navigation.NavType.IntType })
+                ) { backStackEntry ->
+                    val id = backStackEntry.arguments?.getInt("filmId") ?: 0
+                    FilmDataScreen(navController, id)
                 }
-                composable("filmEdit") { FilmEditScreen(navController) }
+                composable(
+                    route = "filmEdit/{filmId}",
+                    arguments = listOf(navArgument("filmId") { type = androidx.navigation.NavType.IntType })
+                ) { backStackEntry ->
+                    val id = backStackEntry.arguments?.getInt("filmId") ?: 0
+                    FilmEditScreen(navController, id)
+                }
                 composable("about") { AboutScreen(navController) }
             }
         }
@@ -115,7 +129,7 @@ fun FilmListScreen(navController : NavController) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { navController.navigate("filmData/${film.title}") }
+                            .clickable { navController.navigate("filmData/${film.id}") }
                             .padding(12.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -157,12 +171,19 @@ fun FilmListScreen(navController : NavController) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FilmDataScreen(navController: NavController, filmTitle: String) {
+fun FilmDataScreen(navController: NavController, filmId: Int) {
+    val film = FilmDataSource.films[filmId]
+
     val uriHandler = LocalUriHandler.current
+    val context = LocalContext.current
+
+    val generoList = context.resources.getStringArray(R.array.genero_list)
+    val formatoList = context.resources.getStringArray(R.array.formato_list)
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.app_name)) },
+                title = { Text(stringResource(R.string.film_data)) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     titleContentColor = MaterialTheme.colorScheme.primary),
@@ -179,13 +200,14 @@ fun FilmDataScreen(navController: NavController, filmTitle: String) {
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(16.dp)
+                .verticalScroll(rememberScrollState())
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.popcorn),
+                    painter = painterResource(id = film.imageResId),
                     contentDescription = null,
                     modifier = Modifier.size(150.dp)
                 )
@@ -194,22 +216,23 @@ fun FilmDataScreen(navController: NavController, filmTitle: String) {
 
                 Column {
                     Text(
-                        text = stringResource(id = R.string.harry_film),
+                        text = film.title ?: stringResource(id = R.string.no_title),
                         style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                         color = Color(0xFF4A6592)
                     )
                     Text(text = "Director:", fontWeight = FontWeight.Bold)
-                    Text(text = "Chris Columbus")
+                    Text(text = film.director ?: "Desconocido")
                     Text(text = stringResource(id = R.string.year), fontWeight = FontWeight.Bold)
-                    Text(text = "2001")
-                    Text(text = "BluRay, Sci-Fi")
+                    Text(text = film.year.toString())
+
+                    Text(text = "${formatoList[film.format]}, ${generoList[film.genre]}")
                 }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
             Button(
-                onClick = { uriHandler.openUri("https://www.imdb.com/title/tt0241527/") },
+                onClick = { uriHandler.openUri(film.imdbUrl ?: "https://www.imdb.com") },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp)
             ) {
@@ -218,7 +241,7 @@ fun FilmDataScreen(navController: NavController, filmTitle: String) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text(text = stringResource(id = R.string.ext_version))
+            Text(text = film.comments ?: "")
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -234,7 +257,7 @@ fun FilmDataScreen(navController: NavController, filmTitle: String) {
                     Text(text = stringResource(id = R.string.back))
                 }
                 Button(
-                    onClick = { navController.navigate("filmEdit") },
+                    onClick = { navController.navigate("filmEdit/$filmId") },
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(20.dp)
                 ) {
@@ -247,26 +270,29 @@ fun FilmDataScreen(navController: NavController, filmTitle: String) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FilmEditScreen(navController: NavController) {
+fun FilmEditScreen(navController: NavController, filmId: Int) {
+    val film = FilmDataSource.films[filmId]
 
-    var titulo by remember { mutableStateOf("") }
-    var director by remember { mutableStateOf("") }
-    var anyo by remember { mutableStateOf("1999") }
-    var url by remember { mutableStateOf("") }
-    var comentarios by remember { mutableStateOf("") }
+    var titulo by remember { mutableStateOf(film.title ?: "") }
+    var director by remember { mutableStateOf(film.director ?: "") }
+    var anyo by remember { mutableStateOf(film.year.toString()) }
+    var url by remember { mutableStateOf(film.imdbUrl ?: "") }
+    var comentarios by remember { mutableStateOf(film.comments ?: "") }
+
+    var genero by remember { mutableIntStateOf(film.genre) }
+    var formato by remember { mutableIntStateOf(film.format) }
 
     var expandedGenero by remember { mutableStateOf(false) }
-    var generoSeleccionado by remember { mutableStateOf("Drama")}
-    val generos = listOf(stringResource(id = R.string.action), "Drama", stringResource(id = R.string.comedy), "Terror", "Sci-Fi")
-
     var expandedFormato by remember { mutableStateOf(false) }
-    var formatoSeleccionado by remember { mutableStateOf("DVD") }
-    val formatos = listOf("DVD", "Blu-ray", "Online")
+
+    val context = LocalContext.current
+    val generoList = context.resources.getStringArray(R.array.genero_list).toList()
+    val formatoList = context.resources.getStringArray(R.array.formato_list).toList()
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.app_name)) },
+                title = { Text(stringResource(R.string.editing_text)) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     titleContentColor = MaterialTheme.colorScheme.primary),
@@ -286,23 +312,6 @@ fun FilmEditScreen(navController: NavController) {
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.popcorn),
-                    contentDescription = null,
-                    modifier = Modifier.size(80.dp)
-                )
-                Button(onClick = {}, modifier = Modifier.weight(1f)) {
-                    Text(stringResource(id = R.string.capt_photo), textAlign = TextAlign.Center)
-                }
-                Button(onClick = {}, modifier = Modifier.weight(1f)) {
-                    Text(stringResource(id = R.string.choose_img), textAlign = TextAlign.Center)
-                }
-            }
 
             OutlinedTextField(
                 value = titulo,
@@ -311,24 +320,9 @@ fun FilmEditScreen(navController: NavController) {
                 modifier = Modifier.fillMaxWidth()
             )
 
-            OutlinedTextField(
-                value = director,
-                onValueChange = { director = it },
-                label = { Text("Director") },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            OutlinedTextField(
-                value = anyo,
-                onValueChange = { anyo = it },
-                label = { Text(stringResource(id = R.string.year)) },
-                modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-            )
-
             Box {
                 OutlinedTextField(
-                    value = generoSeleccionado,
+                    value = generoList[genero],
                     onValueChange = {},
                     readOnly = true,
                     label = { Text(stringResource(id = R.string.gen)) },
@@ -340,11 +334,11 @@ fun FilmEditScreen(navController: NavController) {
                     }
                 )
                 DropdownMenu(expanded = expandedGenero, onDismissRequest = { expandedGenero = false }) {
-                    generos.forEach { item ->
+                    generoList.forEachIndexed { index, item ->
                         DropdownMenuItem(
                             text = { Text(item) },
                             onClick = {
-                                generoSeleccionado = item
+                                genero = index
                                 expandedGenero = false
                             }
                         )
@@ -354,7 +348,7 @@ fun FilmEditScreen(navController: NavController) {
 
             Box {
                 OutlinedTextField(
-                    value = formatoSeleccionado,
+                    value = formatoList[formato],
                     onValueChange = {},
                     readOnly = true,
                     label = { Text(stringResource(id = R.string.form)) },
@@ -366,11 +360,11 @@ fun FilmEditScreen(navController: NavController) {
                     }
                 )
                 DropdownMenu(expanded = expandedFormato, onDismissRequest = { expandedFormato = false }) {
-                    formatos.forEach { item ->
+                    formatoList.forEachIndexed { index, item ->
                         DropdownMenuItem(
                             text = { Text(item) },
                             onClick = {
-                                formatoSeleccionado = item
+                                formato = index
                                 expandedFormato = false
                             }
                         )
@@ -378,29 +372,26 @@ fun FilmEditScreen(navController: NavController) {
                 }
             }
 
-            OutlinedTextField(
-                value = url,
-                onValueChange = { url = it },
-                label = { Text("Enlace a IMDB") },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            OutlinedTextField(
-                value = comentarios,
-                onValueChange = { comentarios = it },
-                label = { Text("Comentarios") },
-                modifier = Modifier.fillMaxWidth().height(120.dp),
-                maxLines = 5
-            )
-
-            // BOTONES FINALES
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(onClick = {
-                    navController.previousBackStackEntry?.savedStateHandle?.set("result", "RESULT_OK")
-                    navController.popBackStack()
-                }, modifier = Modifier.weight(1f)) {
+                Button(
+                    onClick = {
+                        // ACTUALIZACIÓN REAL DE LOS DATOS
+                        film.title = titulo
+                        film.director = director
+                        film.year = anyo.toIntOrNull() ?: 0
+                        film.imdbUrl = url
+                        film.comments = comentarios
+                        film.genre = genero
+                        film.format = formato
+
+                        navController.previousBackStackEntry?.savedStateHandle?.set("result", "RESULT_OK")
+                        navController.popBackStack()
+                    },
+                    modifier = Modifier.weight(1f)
+                ) {
                     Text(stringResource(id = R.string.save))
                 }
+
                 Button(onClick = {
                     navController.previousBackStackEntry?.savedStateHandle?.set("result", "RESULT_CANCELED")
                     navController.popBackStack()
