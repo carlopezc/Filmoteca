@@ -22,7 +22,14 @@
     <string name="changes_cancel">Se han descartado los cambios</string>
     <string name="edit">Editar</string>
     <string name="harry_film">Harry Potter y la piedra filosofal</string>
-    <string name="year">Año:</string>
+    <string name="year">Año</string>
     <string name="ext_version">Visión extendida</string>
     <string name="IMDB">Ver en IMDB</string>
+    <string name="action">Acción</string>
+    <string name="comedy">Comedia</string>
+    <string name="capt_photo">Tomar una fotografía</string>
+    <string name="choose_img">Seleccionar una imagen</string>
+    <string name="title">Título</string>
+    <string name="gen">Género</string>
+    <string name="form">Formato</string>
 </resources>

@@ -22,8 +22,15 @@
     <string name="changes_ok">The film has been edited correctly</string>
     <string name="changes_cancel">Changes have been canceled</string>
     <string name="edit">Edit</string>
-    <string name="harry_film">Harry Potter and the Philosopher's Stone</string>
-    <string name="year">Year:</string>
+    <string name="harry_film">Harry Potter and the Philosophers Stone</string>
+    <string name="year">Year</string>
     <string name="ext_version">Extended version</string>
     <string name="IMDB">Watch in IMDB</string>
+    <string name="action">Action</string>
+    <string name="comedy">Comedy</string>
+    <string name="capt_photo">Take a photo</string>
+    <string name="choose_img">Choose an image</string>
+    <string name="title">Title</string>
+    <string name="gen">Genre</string>
+    <string name="form">Format</string>
 </resources>

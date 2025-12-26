@@ -1,7 +1,7 @@
 package com.campusdigitalfp.filmoteca
 
-import android.app.Activity
 import android.content.Context
+import com.campusdigitalfp.filmoteca.FilmDataSource
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -15,9 +15,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
-import androidx.compose.ui.tooling.preview.Preview
-import com.campusdigitalfp.filmoteca.ui.theme.FilmotecaTheme
 import androidx.compose.material3.Button
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -36,7 +33,9 @@ import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.res.stringResource
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -51,8 +50,27 @@ import androidx.navigation.compose.rememberNavController
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.material3.Icon
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.graphics.Color
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.ui.layout.ContentScale
 import androidx.savedstate.serialization.saved
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -77,29 +95,65 @@ class MainActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FilmListScreen(navController : NavController) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.app_name)) }
-            )
-        }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Button(onClick = { navController.navigate("filmData/Avatar") }) { Text(stringResource(id = R.string.buttonFilm1)) }
-            Button(onClick = { navController.navigate("filmData/Titanic") }) {
-                Text(
-                    stringResource(
-                        id = R.string.buttonFilm2
+        val films = FilmDataSource.films
+
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text(stringResource(R.string.app_name)) },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
                     )
                 )
             }
-            Button(onClick = { navController.navigate("about") }) { Text(stringResource(id = R.string.about)) }
+        ) { paddingValues ->
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+            ) {
+                items(films) { film ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { navController.navigate("filmData/${film.title}") }
+                            .padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Image(
+                            painter = painterResource(id = film.imageResId),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(80.dp)
+                                .clip(RoundedCornerShape(8.dp)),
+                            contentScale = ContentScale.Crop
+                        )
+
+                        Spacer(modifier = Modifier.width(16.dp))
+
+                        Column(
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(
+                                text = film.title ?: stringResource(id = R.string.no_title),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = film.director ?: "",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Color.Gray
+                            )
+                        }
+                    }
+                    HorizontalDivider(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        thickness = 0.5.dp,
+                        color = Color.LightGray
+                    )
+                }
+            }
         }
-    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -111,6 +165,9 @@ fun FilmDataScreen(navController: NavController, filmTitle: String) {
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.app_name)) },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    titleContentColor = MaterialTheme.colorScheme.primary),
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -193,15 +250,30 @@ fun FilmDataScreen(navController: NavController, filmTitle: String) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FilmEditScreen(navController: NavController) {
+
+    var titulo by remember { mutableStateOf("") }
+    var director by remember { mutableStateOf("") }
+    var anyo by remember { mutableStateOf("1999") }
+    var url by remember { mutableStateOf("") }
+    var comentarios by remember { mutableStateOf("") }
+
+    var expandedGenero by remember { mutableStateOf(false) }
+    var generoSeleccionado by remember { mutableStateOf("Drama")}
+    val generos = listOf(stringResource(id = R.string.action), "Drama", stringResource(id = R.string.comedy), "Terror", "Sci-Fi")
+
+    var expandedFormato by remember { mutableStateOf(false) }
+    var formatoSeleccionado by remember { mutableStateOf("DVD") }
+    val formatos = listOf("DVD", "Blu-ray", "Online")
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.edit_film)) },
+                title = { Text(stringResource(R.string.app_name)) },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    titleContentColor = MaterialTheme.colorScheme.primary),
                 navigationIcon = {
-                    IconButton(onClick = {
-                        navController.previousBackStackEntry?.savedStateHandle?.set("result", "RESULT_CANCELED")
-                        navController.popBackStack()
-                    }) {
+                    IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 }
@@ -211,25 +283,132 @@ fun FilmEditScreen(navController: NavController) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(paddingValues)
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text(text = stringResource(id = R.string.editing_text))
-            Button(onClick = {
-                navController.previousBackStackEntry?.savedStateHandle?.set("result", "RESULT_OK")
-                navController.popBackStack()
-            }) {
-                Text(stringResource(id = R.string.save))
-            }
-            Button(onClick = {
-                navController.previousBackStackEntry?.savedStateHandle?.set(
-                    "result",
-                    "RESULT_CANCELED"
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.popcorn),
+                    contentDescription = null,
+                    modifier = Modifier.size(80.dp)
                 )
-                navController.popBackStack()
-            }) {
-                Text(stringResource(id = R.string.cancel))
+                Button(onClick = {}, modifier = Modifier.weight(1f)) {
+                    Text(stringResource(id = R.string.capt_photo), textAlign = TextAlign.Center)
+                }
+                Button(onClick = {}, modifier = Modifier.weight(1f)) {
+                    Text(stringResource(id = R.string.choose_img), textAlign = TextAlign.Center)
+                }
+            }
+
+            OutlinedTextField(
+                value = titulo,
+                onValueChange = { titulo = it },
+                label = { Text(stringResource(id = R.string.title)) },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            OutlinedTextField(
+                value = director,
+                onValueChange = { director = it },
+                label = { Text("Director") },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            OutlinedTextField(
+                value = anyo,
+                onValueChange = { anyo = it },
+                label = { Text(stringResource(id = R.string.year)) },
+                modifier = Modifier.fillMaxWidth(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+            )
+
+            Box {
+                OutlinedTextField(
+                    value = generoSeleccionado,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text(stringResource(id = R.string.gen)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    trailingIcon = {
+                        IconButton(onClick = { expandedGenero = true }) {
+                            Icon(Icons.Default.ArrowDropDown, contentDescription = null)
+                        }
+                    }
+                )
+                DropdownMenu(expanded = expandedGenero, onDismissRequest = { expandedGenero = false }) {
+                    generos.forEach { item ->
+                        DropdownMenuItem(
+                            text = { Text(item) },
+                            onClick = {
+                                generoSeleccionado = item
+                                expandedGenero = false
+                            }
+                        )
+                    }
+                }
+            }
+
+            Box {
+                OutlinedTextField(
+                    value = formatoSeleccionado,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text(stringResource(id = R.string.form)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    trailingIcon = {
+                        IconButton(onClick = { expandedFormato = true }) {
+                            Icon(Icons.Default.ArrowDropDown, contentDescription = null)
+                        }
+                    }
+                )
+                DropdownMenu(expanded = expandedFormato, onDismissRequest = { expandedFormato = false }) {
+                    formatos.forEach { item ->
+                        DropdownMenuItem(
+                            text = { Text(item) },
+                            onClick = {
+                                formatoSeleccionado = item
+                                expandedFormato = false
+                            }
+                        )
+                    }
+                }
+            }
+
+            OutlinedTextField(
+                value = url,
+                onValueChange = { url = it },
+                label = { Text("Enlace a IMDB") },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            OutlinedTextField(
+                value = comentarios,
+                onValueChange = { comentarios = it },
+                label = { Text("Comentarios") },
+                modifier = Modifier.fillMaxWidth().height(120.dp),
+                maxLines = 5
+            )
+
+            // BOTONES FINALES
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(onClick = {
+                    navController.previousBackStackEntry?.savedStateHandle?.set("result", "RESULT_OK")
+                    navController.popBackStack()
+                }, modifier = Modifier.weight(1f)) {
+                    Text(stringResource(id = R.string.save))
+                }
+                Button(onClick = {
+                    navController.previousBackStackEntry?.savedStateHandle?.set("result", "RESULT_CANCELED")
+                    navController.popBackStack()
+                }, modifier = Modifier.weight(1f)) {
+                    Text(stringResource(id = R.string.cancel))
+                }
             }
         }
     }
@@ -250,18 +429,35 @@ fun mandarEmail(context: Context, email: String, asunto: String) {
     }
     context.startActivity(intent)
 }
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AboutScreen(navController: NavController) {
     val context = LocalContext.current
     val uriHandler = LocalUriHandler.current
     val asuntoEmail = stringResource(id = R.string.support_header)
 
-    Scaffold { paddingValues -> 
+    Scaffold (
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(id = R.string.about)) },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    titleContentColor = MaterialTheme.colorScheme.primary
+                )
+            )
+        }
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp),
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
