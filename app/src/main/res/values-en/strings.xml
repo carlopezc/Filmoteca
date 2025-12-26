@@ -21,4 +21,9 @@
     <string name="no_title">Without title</string>
     <string name="changes_ok">The film has been edited correctly</string>
     <string name="changes_cancel">Changes have been canceled</string>
+    <string name="edit">Edit</string>
+    <string name="harry_film">Harry Potter and the Philosopher's Stone</string>
+    <string name="year">Year:</string>
+    <string name="ext_version">Extended version</string>
+    <string name="IMDB">Watch in IMDB</string>
 </resources>

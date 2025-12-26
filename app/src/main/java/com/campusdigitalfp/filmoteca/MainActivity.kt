@@ -37,6 +37,7 @@ import androidx.compose.ui.res.stringResource
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -49,6 +50,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.material3.Icon
+import androidx.compose.foundation.layout.width
+import androidx.compose.ui.graphics.Color
 import androidx.savedstate.serialization.saved
 
 class MainActivity : ComponentActivity() {
@@ -102,15 +105,12 @@ fun FilmListScreen(navController : NavController) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FilmDataScreen(navController: NavController, filmTitle: String) {
-    val result = navController.currentBackStackEntry
-        ?.savedStateHandle
-        ?.getLiveData<String>("result")
-        ?.observeAsState()
+    val uriHandler = LocalUriHandler.current
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(filmTitle) },
+                title = { Text(stringResource(R.string.app_name)) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -118,28 +118,76 @@ fun FilmDataScreen(navController: NavController, filmTitle: String) {
                 }
             )
         }
-    ) {paddingValues ->
-                Column (
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(text = "${stringResource(id = R.string.film_data)}: $filmTitle")
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.popcorn),
+                    contentDescription = null,
+                    modifier = Modifier.size(150.dp)
+                )
 
-                    if (result?.value == "RESULT_OK") {
-                        Text(text = stringResource(id = R.string.changes_ok))
-                    } else if (result?.value == "RESULT_CANCELED") {
-                        Text(text = stringResource(id = R.string.changes_cancel))
-                    }
-                    Button(onClick = { navController.navigate("filmData/Película relacionada")}) {Text(stringResource(id = R.string.watch_film))}
-                    Button(onClick = { navController.navigate("filmEdit")}) {Text(stringResource(id = R.string.edit_film))}
-                    Button(onClick = {
-                        navController.navigate("filmList") {
-                            popUpTo("filmList") { inclusive = true }
-                        }
-                    }) { Text(stringResource(id = R.string.back_principal))}
+                Spacer(modifier = Modifier.width(16.dp))
+
+                Column {
+                    Text(
+                        text = stringResource(id = R.string.harry_film),
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                        color = Color(0xFF4A6592)
+                    )
+                    Text(text = "Director:", fontWeight = FontWeight.Bold)
+                    Text(text = "Chris Columbus")
+                    Text(text = stringResource(id = R.string.year), fontWeight = FontWeight.Bold)
+                    Text(text = "2001")
+                    Text(text = "BluRay, Sci-Fi")
                 }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Button(
+                onClick = { uriHandler.openUri("https://www.imdb.com/title/tt0241527/") },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(20.dp)
+            ) {
+                Text(stringResource(id = R.string.IMDB))
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(text = stringResource(id = R.string.ext_version))
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Button(
+                    onClick = { navController.popBackStack() },
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(20.dp)
+                ) {
+                    Text(text = stringResource(id = R.string.back))
+                }
+                Button(
+                    onClick = { navController.navigate("filmEdit") },
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(20.dp)
+                ) {
+                    Text(text = stringResource(id = R.string.edit))
+                }
+            }
         }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

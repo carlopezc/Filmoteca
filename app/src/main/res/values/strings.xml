@@ -20,4 +20,9 @@
     <string name="no_title">Sin título</string>
     <string name="changes_ok">La película ha sido editada correctamente</string>
     <string name="changes_cancel">Se han descartado los cambios</string>
+    <string name="edit">Editar</string>
+    <string name="harry_film">Harry Potter y la piedra filosofal</string>
+    <string name="year">Año:</string>
+    <string name="ext_version">Visión extendida</string>
+    <string name="IMDB">Ver en IMDB</string>
 </resources>
