@@ -96,7 +96,6 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun FilmListScreen(navController : NavController) {
         val films = FilmDataSource.films
-
         Scaffold(
             topBar = {
                 TopAppBar(
