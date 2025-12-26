@@ -159,7 +159,6 @@ fun FilmListScreen(navController : NavController) {
 @Composable
 fun FilmDataScreen(navController: NavController, filmTitle: String) {
     val uriHandler = LocalUriHandler.current
-
     Scaffold(
         topBar = {
             TopAppBar(
