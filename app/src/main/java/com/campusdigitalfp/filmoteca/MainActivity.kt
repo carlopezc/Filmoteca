@@ -33,6 +33,7 @@ import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.res.stringResource
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -346,6 +347,7 @@ fun FilmDataScreen(navController: NavController, filmId: Int) {
 @Composable
 fun FilmEditScreen(navController: NavController, filmId: Int) {
     val film = FilmDataSource.films[filmId]
+    val TAG = "FilmEditScreen"
 
     var titulo by remember { mutableStateOf(film.title ?: "") }
     var director by remember { mutableStateOf(film.director ?: "") }
@@ -469,6 +471,8 @@ fun FilmEditScreen(navController: NavController, filmId: Int) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(
                     onClick = {
+                        Log.i(TAG, "Guardando cambios para la película: $titulo (ID: $filmId)")
+
                         film.title = titulo
                         film.director = director
                         film.year = anyo.toIntOrNull() ?: 0
@@ -486,6 +490,8 @@ fun FilmEditScreen(navController: NavController, filmId: Int) {
                 }
 
                 Button(onClick = {
+                    Log.i(TAG, "Edición cancelada por el usuario.")
+
                     navController.previousBackStackEntry?.savedStateHandle?.set("result", "RESULT_CANCELED")
                     navController.popBackStack()
                 }, modifier = Modifier.weight(1f)) {
