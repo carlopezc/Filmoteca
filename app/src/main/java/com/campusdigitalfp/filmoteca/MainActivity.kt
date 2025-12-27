@@ -110,15 +110,23 @@ fun FilmListScreen(navController : NavController) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.app_name)) },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                ),
+                title = {
+                    Box(modifier = Modifier.clickable {
+                    }) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Image(
+                                painter = painterResource(id = R.drawable.popcorn),
+                                contentDescription = "Home",
+                                modifier = Modifier.size(32.dp).padding(end = 8.dp)
+                            )
+                            Text(stringResource(R.string.app_name))
+                        }
+                    }
+                },
                 actions = {
                     IconButton(onClick = { showMenu = true }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "Opciones")
+                        Icon(Icons.Default.MoreVert, contentDescription = "Menú")
                     }
-
                     DropdownMenu(
                         expanded = showMenu,
                         onDismissRequest = { showMenu = false }
@@ -132,15 +140,12 @@ fun FilmListScreen(navController : NavController) {
                                     title = "Nueva película",
                                     director = "Director desconocido",
                                     imageResId = R.drawable.popcorn,
-                                    year = 2024,
-                                    genre = Film.GENRE_ACTION,
-                                    format = Film.FORMAT_DVD
+                                    year = 2025
                                 )
                                 films.add(newFilm)
                             },
                             leadingIcon = { Icon(Icons.Default.Add, contentDescription = null) }
                         )
-
                         DropdownMenuItem(
                             text = { Text(stringResource(R.string.about)) },
                             onClick = {
@@ -150,7 +155,10 @@ fun FilmListScreen(navController : NavController) {
                             leadingIcon = { Icon(Icons.Default.Info, contentDescription = null) }
                         )
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                )
             )
         }
     ) { paddingValues ->
@@ -217,15 +225,35 @@ fun FilmDataScreen(navController: NavController, filmId: Int) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.film_data)) },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.primary),
+                title = {
+                    Box(
+                        modifier = Modifier.clickable {
+                            navController.navigate("filmList") {
+                                popUpTo("filmList") { inclusive = true }
+                            }
+                        }
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Image(
+                                painter = painterResource(id = R.drawable.popcorn),
+                                contentDescription = "Ir al inicio",
+                                modifier = Modifier
+                                    .size(35.dp)
+                                    .padding(end = 8.dp)
+                            )
+                            Text(text = stringResource(R.string.app_name))
+                        }
+                    }
+                },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Atrás")
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    titleContentColor = MaterialTheme.colorScheme.primary
+                )
             )
         }
     ) { paddingValues ->
@@ -326,15 +354,35 @@ fun FilmEditScreen(navController: NavController, filmId: Int) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.editing_text)) },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.primary),
+                title = {
+                    Box(
+                        modifier = Modifier.clickable {
+                            navController.navigate("filmList") {
+                                popUpTo("filmList") { inclusive = true }
+                            }
+                        }
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Image(
+                                painter = painterResource(id = R.drawable.popcorn),
+                                contentDescription = "Ir al inicio",
+                                modifier = Modifier
+                                    .size(35.dp)
+                                    .padding(end = 8.dp)
+                            )
+                            Text(text = stringResource(R.string.app_name))
+                        }
+                    }
+                },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Atrás")
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    titleContentColor = MaterialTheme.colorScheme.primary
+                )
             )
         }
     ) { paddingValues ->
@@ -409,7 +457,6 @@ fun FilmEditScreen(navController: NavController, filmId: Int) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(
                     onClick = {
-                        // ACTUALIZACIÓN REAL DE LOS DATOS
                         film.title = titulo
                         film.director = director
                         film.year = anyo.toIntOrNull() ?: 0
@@ -462,10 +509,29 @@ fun AboutScreen(navController: NavController) {
     Scaffold (
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(id = R.string.about)) },
+                title = {
+                    Box(
+                        modifier = Modifier.clickable {
+                            navController.navigate("filmList") {
+                                popUpTo("filmList") { inclusive = true }
+                            }
+                        }
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Image(
+                                painter = painterResource(id = R.drawable.popcorn),
+                                contentDescription = "Ir al inicio",
+                                modifier = Modifier
+                                    .size(35.dp)
+                                    .padding(end = 8.dp)
+                            )
+                            Text(text = stringResource(R.string.app_name))
+                        }
+                    }
+                },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Atrás")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
