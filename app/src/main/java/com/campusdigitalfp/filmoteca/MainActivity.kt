@@ -33,7 +33,10 @@ import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.res.stringResource
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -64,12 +67,17 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.Checkbox
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.navigation.navArgument
+import androidx.compose.runtime.mutableStateListOf
 
 
 class MainActivity : ComponentActivity() {
@@ -102,113 +110,117 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun FilmListScreen(navController : NavController) {
-        val films = FilmDataSource.films
-        var showMenu by remember { mutableStateOf(false) }
+fun FilmListScreen(navController: NavController) {
+    val films = FilmDataSource.films
+    val selectedIndices = remember { mutableStateListOf<Int>() }
+    val isSelectionMode = selectedIndices.isNotEmpty()
+    var showMenu by remember { mutableStateOf(false) }
+
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
-                    Box(modifier = Modifier.clickable {
-                    }) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Image(
-                                painter = painterResource(id = R.drawable.popcorn),
-                                contentDescription = "Home",
-                                modifier = Modifier.size(32.dp).padding(end = 8.dp)
-                            )
+                    if (isSelectionMode) {
+                        Text("${selectedIndices.size} seleccionadas")
+                    } else {
+                        Row(verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.clickable { /* Scroll to top */ }) {
+                            Image(painter = painterResource(id = R.drawable.popcorn),
+                                contentDescription = null, modifier = Modifier.size(32.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
                             Text(stringResource(R.string.app_name))
                         }
                     }
                 },
-                actions = {
-                    IconButton(onClick = { showMenu = true }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "Menú")
+                navigationIcon = {
+                    if (isSelectionMode) {
+                        IconButton(onClick = { selectedIndices.clear() }) {
+                            Icon(Icons.Default.Close, contentDescription = "Cancelar")
+                        }
                     }
-                    DropdownMenu(
-                        expanded = showMenu,
-                        onDismissRequest = { showMenu = false }
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text("Añadir película") },
-                            onClick = {
-                                showMenu = false
-                                val newFilm = Film(
-                                    id = films.size,
-                                    title = "Nueva película",
-                                    director = "Director desconocido",
-                                    imageResId = R.drawable.popcorn,
-                                    year = 2025
-                                )
-                                films.add(newFilm)
-                            },
-                            leadingIcon = { Icon(Icons.Default.Add, contentDescription = null) }
-                        )
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.about)) },
-                            onClick = {
-                                showMenu = false
-                                navController.navigate("about")
-                            },
-                            leadingIcon = { Icon(Icons.Default.Info, contentDescription = null) }
-                        )
+                },
+                actions = {
+                    if (isSelectionMode) {
+                        IconButton(onClick = {
+                            selectedIndices.sortedDescending().forEach { index ->
+                                films.removeAt(index)
+                            }
+                            selectedIndices.clear()
+                        }) {
+                            Icon(Icons.Default.Delete, contentDescription = "Borrar")
+                        }
+                    } else {
+                        IconButton(onClick = { showMenu = true }) {
+                            Icon(Icons.Default.MoreVert, contentDescription = "Menú")
+                        }
+                        DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
+                            DropdownMenuItem(
+                                text = { Text("Añadir película") },
+                                onClick = {
+                                    showMenu = false
+                                    films.add(Film(id = films.size, title = "Nueva Película", imageResId = R.drawable.popcorn))
+                                },
+                                leadingIcon = { Icon(Icons.Default.Add, contentDescription = null) }
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.about)) },
+                                onClick = { showMenu = false; navController.navigate("about") },
+                                leadingIcon = { Icon(Icons.Default.Info, contentDescription = null) }
+                            )
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                    containerColor = if (isSelectionMode) MaterialTheme.colorScheme.secondaryContainer
+                    else MaterialTheme.colorScheme.primaryContainer
                 )
             )
         }
     ) { paddingValues ->
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-            ) {
-                items(films) { film ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { navController.navigate("filmData/${film.id}") }
-                            .padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Image(
-                            painter = painterResource(id = film.imageResId),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(80.dp)
-                                .clip(RoundedCornerShape(8.dp)),
-                            contentScale = ContentScale.Crop
+        LazyColumn(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
+            itemsIndexed(films) { index, film ->
+                val isSelected = selectedIndices.contains(index)
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .combinedClickable(
+                            onClick = {
+                                if (isSelectionMode) {
+                                    if (isSelected) selectedIndices.remove(index) else selectedIndices.add(index)
+                                } else {
+                                    navController.navigate("filmData/$index")
+                                }
+                            },
+                            onLongClick = {
+                                if (!isSelectionMode) selectedIndices.add(index)
+                            }
                         )
-
-                        Spacer(modifier = Modifier.width(16.dp))
-
-                        Column(
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text(
-                                text = film.title ?: stringResource(id = R.string.no_title),
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Text(
-                                text = film.director ?: "",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = Color.Gray
-                            )
-                        }
-                    }
-                    HorizontalDivider(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        thickness = 0.5.dp,
-                        color = Color.LightGray
+                        .background(if (isSelected) Color.LightGray.copy(alpha = 0.4f) else Color.Transparent)
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Image(
+                        painter = painterResource(id = film.imageResId),
+                        contentDescription = null,
+                        modifier = Modifier.size(60.dp).clip(RoundedCornerShape(8.dp)),
+                        contentScale = ContentScale.Crop
                     )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(text = film.title ?: "", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        Text(text = film.director ?: "", style = MaterialTheme.typography.bodySmall)
+                    }
+                    if (isSelectionMode) {
+                        Checkbox(checked = isSelected, onCheckedChange = null)
+                    }
                 }
+                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp)
             }
         }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
