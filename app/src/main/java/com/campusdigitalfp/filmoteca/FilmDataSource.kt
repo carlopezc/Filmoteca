@@ -1,7 +1,9 @@
 package com.campusdigitalfp.filmoteca
 
+import androidx.compose.runtime.mutableStateListOf
+
 object FilmDataSource {
-    val films: MutableList<Film> = mutableListOf()
+    val films = mutableStateListOf<Film>()
 
     init {
         val f1 = Film()
